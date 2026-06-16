@@ -16,9 +16,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             trigger_characters: Some(vec!["\\".into(), " ".into()]),
             ..Default::default()
         }),
-        text_document_sync: Some(TextDocumentSyncCapability::Kind(
-            TextDocumentSyncKind::FULL,
-        )),
+        text_document_sync: Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::FULL)),
         ..Default::default()
     })?;
 
@@ -35,10 +33,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 if req.method == "textDocument/completion" {
                     let params: CompletionParams = serde_json::from_value(req.params.clone())?;
                     let uri = params.text_document_position.text_document.uri.to_string();
-                    let items = docs
-                        .get(&uri)
-                        .map(|t| completions(t))
-                        .unwrap_or_default();
+                    let items = docs.get(&uri).map(|t| completions(t)).unwrap_or_default();
                     let result = serde_json::to_value(CompletionResponse::Array(items))?;
                     conn.sender
                         .send(Message::Response(Response::new_ok(req.id, result)))?;
@@ -66,8 +61,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 }
 
 // Parse every `let name = body` in the document and return two completions:
-//   • the name itself  (so you can reference the binding)
-//   • "name (expand)"  (inserts the full body in parentheses)
+//   - the name itself  (so you can reference the binding)
+//   - "name (expand)"  (inserts the full body in parentheses)
 fn completions(text: &str) -> Vec<CompletionItem> {
     let mut items = Vec::new();
 
